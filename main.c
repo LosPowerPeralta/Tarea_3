@@ -48,13 +48,16 @@ void procesoArchivo(char archivo[16], char* titulo){
     }
 
     char linea[1024];
-    //Hay 3 casos distintos para obtener el titulo del libro
-    fgets(linea,35,fp);
-    fgets(titulo,100,fp);
-
+    while( fscanf(fp, " %1023s", linea)){
+        //printf("%s", linea); system("pause");
+        if (strcmp(linea, "Title:") == 0){
+            fgetc(fp);
+            fgets(titulo,100,fp);
+            break;
+        }
+    }
 
     titulo[strlen(titulo) - 1] = '\0'; //Elimina el salto de linea
-
     fclose(fp);//Cerrar file
 }
 
@@ -143,9 +146,7 @@ void mostrarPalabras(HashMap* MapPalabras){
 }
 
 void removerCaracteresEspeciales(char *str) {
-    
   int indiceCadena = 0, indiceCadenaLimpia = 0;
-  
   while (str[indiceCadena]) {
     if ( (str[indiceCadena] >= 65 && str[indiceCadena] <= 90) || (str[indiceCadena] >= 97 && str[indiceCadena] <= 122 )) {
       str[indiceCadenaLimpia] = str[indiceCadena];
@@ -153,8 +154,18 @@ void removerCaracteresEspeciales(char *str) {
     }
     indiceCadena++;
   }
-
   str[indiceCadenaLimpia] = 0;
+}
+
+void ubicarPosicionDeLectura(FILE* fp){
+    char linea[1024];
+    while(true){
+        fscanf(fp, " %1023s", linea);
+        if(strcmp(linea,"***") == 0){
+            fgets(linea,1023,fp);
+            break;
+        }
+    }
 }
 
 void LeerArchivo(char* ubicacion, Libro* libro){
@@ -166,6 +177,8 @@ void LeerArchivo(char* ubicacion, Libro* libro){
         system("pause");
         exit (1); 
     }
+    ubicarPosicionDeLectura(fp);
+    
     Word* palabraAux;
     libro->wordSearch = createMap(250);
     //Aqui obtengo las palabras de cada archivo y las guardo
@@ -185,7 +198,7 @@ void LeerArchivo(char* ubicacion, Libro* libro){
             libro->cantPalabra += 1;
         }
 
-     word=next_word(fp);
+        word=next_word(fp);
     }
     mostrarPalabras(libro->wordSearch);
     printf("%i - %i", libro->cantPalabra, libro->cantCaracter );
@@ -224,7 +237,7 @@ void importar(HashMap* MapLibros) {
             printf("Libro agregado a la biblioteca\n");
         } 
         else{
-            printf("Este titulo no se encuentra\n");
+            printf("Este titulo no se encuentra en el listado\n");
         }
         
 
