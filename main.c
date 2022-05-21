@@ -70,6 +70,19 @@ bool esNumero(char *caracter) {
     return true;
 }
 
+char* elimCharEspeciales( char* str ){
+
+    size_t largo = strlen(str);
+    size_t j = 0;
+    for(size_t i = 0; i < largo + 1; i++){
+        if((str[i] >= 65  && str[i] <= 90) || (str[i] >= 97  && str[i] <= 122) ){ // Solo guardar caracteres de la A-Z ó a-z
+            str[j] = str[i];
+            j += 1;
+        }
+    }
+    return str;
+}
+
 HashMap* listarArchivos(){
 
     HashMap *MapLibros = createMap(101);
@@ -124,9 +137,9 @@ char* next_word (FILE *f) {
         return NULL;
 }
 
-void contarCaracteres( Word* palabraAux, Libro* libro){
+void contarCaracteres( char* palabraAux, Libro* libro){
     int cont;
-    for(cont = 0 ; palabraAux->palabra[cont]!= '\0'; cont += 1 ){
+    for(cont = 0 ; palabraAux[cont]!= '\0'; cont += 1 ){
         libro->cantCaracter += 1;
     }
     libro->cantCaracter += 1;
@@ -163,9 +176,9 @@ void LeerArchivo(char* ubicacion, Libro* libro){
            palabraAux->frecuencia += 1; 
         }
         else{
+            elimCharEspeciales(word);
+            contarCaracteres(word, libro);
             palabraAux = createPalabra(word);
-            contarCaracteres(palabraAux, libro);
-            //SACAR CARACTERES ESPECIALES
             insertMap(libro->wordSearch, palabraAux->palabra, palabraAux );
             libro->cantPalabra += 1;
         }
