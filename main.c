@@ -13,23 +13,23 @@ typedef struct{
     char* palabra;
     unsigned long frecuencia;
     unsigned long relevancia;
-}Word;
+}Word;  //Struct de cada palabra 
 
 typedef struct{
     char titulo[101];
     char codigo[11];
     unsigned long cantCaracter;
-    HashMap* wordSearch;
-    //TreeMap* wordFrecuency;
-    //TreeMap* wordRelevancy;
+    HashMap* wordSearch;        //Mapa para guardar buscar palabras
+    //TreeMap* wordFrecuency;   //Mapa de frecuencias de cada palabra
+    //TreeMap* wordRelevancy;   //Mapa de relevancias de cada palabra
     unsigned long cantPalabra;
-}Libro;
+}Libro;   //Struct de un archivo ".txt" 
 
 typedef struct{
     //TreeMap* Libros;
-}Biblioteca;
+}Biblioteca;  //Archivo de libros que contiene todos los ".txt", se guardan en un Arbol
 
-Word* createPalabra(char* str){
+Word* createPalabra(char* str){ 
     Word* NewWord = (Word*) malloc( sizeof(Word) );
     NewWord->palabra = (char*) malloc( strlen(str)+1);
     strcpy(NewWord->palabra,str);
@@ -37,7 +37,7 @@ Word* createPalabra(char* str){
     return NewWord;
 }
 
-void procesoArchivo(char archivo[16], char* titulo){
+void procesoArchivo(char archivo[16], char* titulo){  
     FILE* fp = NULL;
     fp = fopen ( archivo , "r");//Abrir file
 
@@ -72,7 +72,7 @@ bool esNumero(char *caracter) {
 
 HashMap* listarArchivos(){
 
-    HashMap *MapLibros = createMap(300);
+    HashMap *MapLibros = createMap(101);
     DIR *directorio;
     struct dirent *entrada;
     
@@ -83,15 +83,15 @@ HashMap* listarArchivos(){
         system("pause");
         exit (1);
     }
-    while ((entrada = readdir (directorio)) != NULL){
-        if ( (strcmp(entrada->d_name, ".")!=0) && (strcmp(entrada->d_name, "..")!=0) ){
-            char titulo[101];
+    while ((entrada = readdir (directorio)) != NULL){  //Se leen los directorios hasta el final
+        if ( (strcmp(entrada->d_name, ".")!=0) && (strcmp(entrada->d_name, "..")!=0) ){ //"." directorio actual
+            char titulo[101];                                                           //".." siguiente directorio 
             //char* titulo = (char*) malloc(101);
             char folder[11]; strcpy(folder,".\\Libros\\"); //Carpeta donde se ubican los libros
             char archivo[21];
             //char* archivo = (char*) malloc(21);
             strcpy(archivo, strcat( folder, (char*)entrada->d_name )); //Ubicación de cada archivo
-            procesoArchivo(archivo, titulo);
+            procesoArchivo(archivo, titulo);   //Función para abrir archivos current y guardar su título
             char* data = (char*) malloc(21); 
             strcpy(data, archivo);
             char* key = (char*) malloc(101);
@@ -104,8 +104,8 @@ HashMap* listarArchivos(){
     return MapLibros;
 }
 
-void quitarFolder(char* codigo , char *ubicacion){
-    int i = 0, j = 0;
+void quitarFolder(char* codigo , char *ubicacion){ //Te pasa una palabra y quita la extensión
+    int i = 0, j = 0;                              //y te deja solo el código ("/libro/10.txt" -> "10")
     while(ubicacion[i] != '\0'){
         if( i >= 9 && i <= strlen(ubicacion)-5){
             codigo[j] = ubicacion[i];
