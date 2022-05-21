@@ -13,23 +13,23 @@ typedef struct{
     char* palabra;
     unsigned long frecuencia;
     unsigned long relevancia;
-}Word;  //Struct de cada palabra 
+}Word;
 
 typedef struct{
     char titulo[101];
     char codigo[11];
     unsigned long cantCaracter;
-    HashMap* wordSearch;        //Mapa para guardar buscar palabras
-    //TreeMap* wordFrecuency;   //Mapa de frecuencias de cada palabra
-    //TreeMap* wordRelevancy;   //Mapa de relevancias de cada palabra
+    HashMap* wordSearch;
+    //TreeMap* wordFrecuency;
+    //TreeMap* wordRelevancy;
     unsigned long cantPalabra;
-}Libro;   //Struct de un archivo ".txt" 
+}Libro;
 
 typedef struct{
     //TreeMap* Libros;
-}Biblioteca;  //Archivo de libros que contiene todos los ".txt", se guardan en un Arbol
+}Biblioteca;
 
-Word* createPalabra(char* str){ 
+Word* createPalabra(char* str){
     Word* NewWord = (Word*) malloc( sizeof(Word) );
     NewWord->palabra = (char*) malloc( strlen(str)+1);
     strcpy(NewWord->palabra,str);
@@ -37,7 +37,7 @@ Word* createPalabra(char* str){
     return NewWord;
 }
 
-void procesoArchivo(char archivo[16], char* titulo){  
+void procesoArchivo(char archivo[16], char* titulo){
     FILE* fp = NULL;
     fp = fopen ( archivo , "r");//Abrir file
 
@@ -70,22 +70,9 @@ bool esNumero(char *caracter) {
     return true;
 }
 
-char* elimCharEspeciales( char* str ){
-
-    size_t largo = strlen(str);
-    size_t j = 0;
-    for(size_t i = 0; i < largo + 1; i++){
-        if((str[i] >= 65  && str[i] <= 90) || (str[i] >= 97  && str[i] <= 122) ){ // Solo guardar caracteres de la A-Z ó a-z
-            str[j] = str[i];
-            j += 1;
-        }
-    }
-    return str;
-}
-
 HashMap* listarArchivos(){
 
-    HashMap *MapLibros = createMap(101);
+    HashMap *MapLibros = createMap(300);
     DIR *directorio;
     struct dirent *entrada;
     
@@ -96,15 +83,15 @@ HashMap* listarArchivos(){
         system("pause");
         exit (1);
     }
-    while ((entrada = readdir (directorio)) != NULL){  //Se leen los directorios hasta el final
-        if ( (strcmp(entrada->d_name, ".")!=0) && (strcmp(entrada->d_name, "..")!=0) ){ //"." directorio actual
-            char titulo[101];                                                           //".." siguiente directorio 
+    while ((entrada = readdir (directorio)) != NULL){
+        if ( (strcmp(entrada->d_name, ".")!=0) && (strcmp(entrada->d_name, "..")!=0) ){
+            char titulo[101];
             //char* titulo = (char*) malloc(101);
             char folder[11]; strcpy(folder,".\\Libros\\"); //Carpeta donde se ubican los libros
             char archivo[21];
             //char* archivo = (char*) malloc(21);
             strcpy(archivo, strcat( folder, (char*)entrada->d_name )); //Ubicación de cada archivo
-            procesoArchivo(archivo, titulo);   //Función para abrir archivos current y guardar su título
+            procesoArchivo(archivo, titulo);
             char* data = (char*) malloc(21); 
             strcpy(data, archivo);
             char* key = (char*) malloc(101);
@@ -117,8 +104,8 @@ HashMap* listarArchivos(){
     return MapLibros;
 }
 
-void quitarFolder(char* codigo , char *ubicacion){ //Te pasa una palabra y quita la extensión
-    int i = 0, j = 0;                              //y te deja solo el código ("/libro/10.txt" -> "10")
+void quitarFolder(char* codigo , char *ubicacion){
+    int i = 0, j = 0;
     while(ubicacion[i] != '\0'){
         if( i >= 9 && i <= strlen(ubicacion)-5){
             codigo[j] = ubicacion[i];
@@ -150,9 +137,24 @@ void mostrarPalabras(HashMap* MapPalabras){
     Word* palabra;
     while(aux){
         palabra = aux->value;
-        printf("%s\n", palabra->palabra);
+        printf("%s - %i\n", palabra->palabra, palabra->frecuencia);
         aux = nextMap(MapPalabras);
     }
+}
+
+void removerCaracteresEspeciales(char *str) {
+    
+  int indiceCadena = 0, indiceCadenaLimpia = 0;
+  
+  while (str[indiceCadena]) {
+    if ( (str[indiceCadena] >= 65 && str[indiceCadena] <= 90) || (str[indiceCadena] >= 97 && str[indiceCadena] <= 122 )) {
+      str[indiceCadenaLimpia] = str[indiceCadena];
+      indiceCadenaLimpia++;
+    }
+    indiceCadena++;
+  }
+
+  str[indiceCadenaLimpia] = 0;
 }
 
 void LeerArchivo(char* ubicacion, Libro* libro){
@@ -176,8 +178,8 @@ void LeerArchivo(char* ubicacion, Libro* libro){
            palabraAux->frecuencia += 1; 
         }
         else{
-            elimCharEspeciales(word);
             contarCaracteres(word, libro);
+            removerCaracteresEspeciales(word);
             palabraAux = createPalabra(word);
             insertMap(libro->wordSearch, palabraAux->palabra, palabraAux );
             libro->cantPalabra += 1;
