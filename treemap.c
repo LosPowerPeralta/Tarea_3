@@ -6,7 +6,7 @@
 typedef struct TreeNode TreeNode;
 
 struct TreeNode {
-    Pair * pair;
+    PairTree * pair;
     TreeNode * left;
     TreeNode * right;
     TreeNode * parent;
@@ -37,7 +37,7 @@ TreeNode * minimum(TreeNode * x){
 TreeNode * createTreeNode(void* key, void * value) {
     TreeNode * new = (TreeNode *)malloc(sizeof(TreeNode));
     if (new == NULL) return NULL;
-    new->pair = (Pair *)malloc(sizeof(Pair));
+    new->pair = (PairTree *)malloc(sizeof(PairTree));
     new->pair->key = key;
     new->pair->value = value;
     new->parent = new->left = new->right = NULL;
@@ -126,7 +126,7 @@ void eraseTreeMap(TreeMap * tree, void* key){
 
 
 
-Pair * searchTreeMap(TreeMap * tree, void* key) {
+PairTree * searchTreeMap(TreeMap * tree, void* key) {
     if (tree == NULL || tree->root == NULL) return NULL;
     
     TreeNode * aux = tree->root;
@@ -147,7 +147,7 @@ Pair * searchTreeMap(TreeMap * tree, void* key) {
 }
 
 
-Pair * upperBound(TreeMap * tree, void* key) {
+PairTree * upperBound(TreeMap * tree, void* key) {
     if (tree == NULL || tree->root == NULL) return NULL;
     
     TreeNode * aux = tree->root;
@@ -172,7 +172,7 @@ Pair * upperBound(TreeMap * tree, void* key) {
     return ub_node->pair;
 }
 
-Pair * firstTreeMap(TreeMap * tree) {
+PairTree * firstTreeMap(TreeMap * tree) {
     if (tree == NULL || tree->root == NULL) return NULL;
     
     TreeNode * aux = tree->root;
@@ -184,7 +184,7 @@ Pair * firstTreeMap(TreeMap * tree) {
     return tree->current->pair;
 }
 
-Pair * nextTreeMap(TreeMap * tree) {
+PairTree * nextTreeMap(TreeMap * tree) {
     if (tree == NULL || tree->root == NULL || tree->current == NULL) return NULL;
     
     if (tree->current->right != NULL) {
