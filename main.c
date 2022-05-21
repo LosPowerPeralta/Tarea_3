@@ -7,17 +7,35 @@
 #include <dirent.h>
 #include "hashmap.c"
 #include "list.c"
+//#include "treemap.c"
+
+typedef struct{
+    char* palabra;
+    unsigned long frecuencia;
+    unsigned long relevancia;
+}Word;
 
 typedef struct{
     char titulo[101];
     char codigo[11];
     unsigned long cantCaracter;
+    HashMap* wordSearch;
+    //TreeMap* wordFrecuency;
+    //TreeMap* wordRelevancy;
     unsigned long cantPalabra;
 }Libro;
 
 typedef struct{
-    
+    //TreeMap* Libros;
 }Biblioteca;
+
+Word* createPalabra(char* str){
+    Word* NewWord = (Word*) malloc( sizeof(Word) );
+    NewWord->palabra = (char*) malloc( strlen(str)+1);
+    strcpy(NewWord->palabra,str);
+    NewWord->frecuencia = 1;
+    return NewWord;
+}
 
 void procesoArchivo(char archivo[16], char* titulo){
     FILE* fp = NULL;
@@ -98,6 +116,32 @@ void quitarFolder(char* codigo , char *ubicacion){
     codigo[j] = '\0';
 }
 
+char* next_word (FILE *f) {
+    char x[1024];
+    if (fscanf(f, " %1023s", x) == 1)
+        return strdup(x);
+    else
+        return NULL;
+}
+
+void contarCaracteres( Word* palabraAux, Libro* libro){
+    int cont;
+    for(cont = 0 ; palabraAux->palabra[cont]!= '\0'; cont += 1 ){
+        libro->cantCaracter += 1;
+    }
+    libro->cantCaracter += 1;
+}
+
+void mostrarPalabras(HashMap* MapPalabras){
+    Pair* aux = firstMap(MapPalabras);
+    Word* palabra;
+    while(aux){
+        palabra = aux->value;
+        printf("%s\n", palabra->palabra);
+        aux = nextMap(MapPalabras);
+    }
+}
+
 void LeerArchivo(char* ubicacion, Libro* libro){
     FILE* fp = NULL;
     fp = fopen ( ubicacion , "r");//Abrir file
@@ -107,7 +151,29 @@ void LeerArchivo(char* ubicacion, Libro* libro){
         system("pause");
         exit (1); 
     }
+    Word* palabraAux;
+    libro->wordSearch = createMap(250);
+    //Aqui obtengo las palabras de cada archivo y las guardo
+    char* word=next_word(fp);
+    Pair* aux;
+    while(word){
+        aux = searchMap(libro->wordSearch, word);
+        if( aux ){
+           palabraAux = aux->value;
+           palabraAux->frecuencia += 1; 
+        }
+        else{
+            palabraAux = createPalabra(word);
+            contarCaracteres(palabraAux, libro);
+            //SACAR CARACTERES ESPECIALES
+            insertMap(libro->wordSearch, palabraAux->palabra, palabraAux );
+            libro->cantPalabra += 1;
+        }
 
+     word=next_word(fp);
+    }
+    mostrarPalabras(libro->wordSearch);
+    printf("%i - %i", libro->cantPalabra, libro->cantCaracter );
     fclose(fp);
     char codigo[11];
     quitarFolder(codigo, ubicacion);
@@ -133,10 +199,13 @@ void importar(HashMap* MapLibros) {
         gets(titulo);
         if(searchMap(MapLibros, titulo)){
             Libro* libroActual = (Libro*) malloc(sizeof(Libro));
+            libroActual->cantCaracter = 0;
+            libroActual->cantPalabra = 0;
             strcpy(libroActual->titulo, titulo);
             LeerArchivo( (char*)searchMap(MapLibros, titulo)->value , libroActual );
             printf("nombre: %s\n",libroActual->titulo);
             printf("codigo: %s\n",libroActual->codigo);
+            //INSERTAR EN EL TREEMAP DE LA BIBLIOTECA
             printf("Libro agregado a la biblioteca\n");
         } 
         else{
