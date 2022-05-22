@@ -7,7 +7,7 @@
 #include <dirent.h>
 #include "hashmap.c"
 #include "list.c"
-//#include "treemap.c"
+#include "treemap.c"
 
 typedef struct{
     char* palabra;
@@ -26,8 +26,9 @@ typedef struct{
 }Libro;
 
 typedef struct{
-    //TreeMap* Libros;
-}Biblioteca;
+    TreeMap* Libros;
+    unsigned long cantLibros;
+}Library;
 
 Word* createPalabra(char* str){
     Word* NewWord = (Word*) malloc( sizeof(Word) );
@@ -216,7 +217,7 @@ void mostrarTitulos(HashMap* MapLibros){
     }
 }
 
-void importar(HashMap* MapLibros) {
+void importar(HashMap* MapLibros, Library* biblioteca) {
     system("cls");
     mostrarTitulos(MapLibros);
 
@@ -226,29 +227,64 @@ void importar(HashMap* MapLibros) {
         fflush(stdin);
         gets(titulo);
         if(searchMap(MapLibros, titulo)){
-            Libro* libroActual = (Libro*) malloc(sizeof(Libro));
-            libroActual->cantCaracter = 0;
-            libroActual->cantPalabra = 0;
-            strcpy(libroActual->titulo, titulo);
-            LeerArchivo( (char*)searchMap(MapLibros, titulo)->value , libroActual );
-            printf("nombre: %s\n",libroActual->titulo);
-            printf("codigo: %s\n",libroActual->codigo);
-            //INSERTAR EN EL TREEMAP DE LA BIBLIOTECA
-            printf("Libro agregado a la biblioteca\n");
+            if( searchTreeMap(biblioteca->Libros, titulo) ){
+                printf("El libro ya fue agregado a la biblioteca\n");
+            }
+            else{
+                Libro* libroActual = (Libro*) malloc(sizeof(Libro));
+                libroActual->cantCaracter = 0;
+                libroActual->cantPalabra = 0;
+                strcpy(libroActual->titulo, titulo);
+                LeerArchivo( (char*)searchMap(MapLibros, titulo)->value , libroActual );
+                printf("nombre: %s\n",libroActual->titulo);
+                printf("codigo: %s\n",libroActual->codigo);
+                insertTreeMap(biblioteca->Libros, libroActual->titulo, libroActual);   //INSERTAR EN EL TREEMAP DE LA BIBLIOTECA
+                printf("Libro agregado a la biblioteca\n");
+            }
+    
         } 
         else{
+            if( strcmp(titulo, "0") != 0)
             printf("Este titulo no se encuentra en el listado\n");
         }
-        
-
     }while(strcmp("0", titulo) != 0);
     system("pause");
 
 }
 
+void mostrarLibros(Library* biblioteca){
+    printf("\nLIBROS DE LA BIBLIOTECA\n");
+    PairTree* aux = firstTreeMap(biblioteca->Libros);
+    while(aux){
+        Libro* libroActual = aux->value;
+
+        printf("Codigo del Libro: %s\n", libroActual->codigo);
+        printf("Nombre del Libro: %s\n", libroActual->titulo);
+        printf("Cantidad de palabras del Libro: %i\n", libroActual->cantPalabra);
+        printf("Cantidad de caracteres del Libro ( Sin considerar saltos de linea ): %i\n\n", libroActual->cantCaracter);
+
+        aux = nextTreeMap(biblioteca->Libros);
+    }
+    system("pause");
+}
+
+int lower_than_string(void* key1, void* key2){
+    char* k1=(char*) key1;
+    char* k2=(char*) key2;
+    if(strcmp(k1,k2)<0) return 1;
+    return 0;
+}
+
+Library* createBiblioteca(){
+    Library* newLibrary = (Library*) malloc(sizeof(Library));
+    newLibrary->Libros = createTreeMap( lower_than_string );
+    newLibrary->cantLibros = 0;
+    return newLibrary;
+}
+
 int main() {
     //system("color 7c");
-
+    Library* biblioteca = createBiblioteca( );
     HashMap* MapArchivos = (HashMap*) listarArchivos(); 
     char opcion[2];
     int auxOpcion;
@@ -280,12 +316,12 @@ int main() {
         switch(auxOpcion)
         {
             case 1: 
-                importar( MapArchivos );
+                importar( MapArchivos, biblioteca );
                 break;
-            /*case 2: 
-                mostrarLibros( almacen->nombre );
+            case 2: 
+                mostrarLibros( biblioteca );
                 break;
-            case 3: 
+            /*case 3: 
                 buscarTitulo( almacen );
                 break;
             case 4: 
@@ -304,7 +340,6 @@ int main() {
                 return EXIT_SUCCESS;
         }
     }
-    
 
     return EXIT_SUCCESS;
 }
