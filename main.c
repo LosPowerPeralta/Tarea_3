@@ -358,6 +358,81 @@ void palabrasRelevantes(Library* biblioteca){
 
 }
 
+List *split(char *string, char *delim) {
+    List *palabras = createList();
+    char *token;
+
+    if (string == NULL) return NULL;
+
+    token = strtok(string, delim);
+    while (token != NULL) {
+        pushBack(palabras, token);
+        token = strtok(NULL, delim);
+    }
+
+    return palabras;
+}
+
+bool verificarLibro(List *words, HashMap *bookWords) {
+    char *string1;
+    char *string2;
+    bool flag;
+
+    string1 = (char *)firstList(words);
+    while (string1 != NULL) {
+        flag = false;
+        string2 = (char *)((Word *)firstMap(bookWords)->value)->palabra;
+        while(string2 != NULL) {
+            //printf("%s = %s\n", string1, string2);
+            if (is_equal(string1, string2)) {
+                flag = true;
+                break;
+            } 
+            string2 = (char *)((Word *)nextMap(bookWords)->value)->palabra;
+        }
+        if (flag == false) return false;
+        string1 = (char *)nextList(words);
+    }
+
+    return true; 
+}
+
+void searchWords(Library *biblioteca) {
+    List *words;
+    char string[100];
+    Library *librosEncontrados = createBiblioteca();
+    HashMap *bookWords;
+    Libro *book;
+    PairTree *aux;
+    size_t cont = 1;
+
+    system("cls");
+    printf("=================== BUSCAR TITULO POR PALABRAS ================\n\n");
+    printf("Ingrese las palabras que desee buscar: ");
+    fflush(stdin);
+    gets(string);
+    printf("\n");
+    words = split(string, " ");
+
+    book = (Libro *)firstTreeMap(biblioteca->Libros)->value;
+    bookWords = book->wordSearch;
+    printf("************ TITULO(S) ***********\n");
+    while (true) {
+        if (verificarLibro(words, bookWords)) {
+            printf("%zd.- %s \n", cont, book->titulo);
+            cont++;
+        }
+
+        aux = nextTreeMap(biblioteca->Libros);
+        if (aux == NULL) break;
+        book = (Libro *)aux->value;
+        bookWords = book->wordSearch;
+    }
+
+    system("pause");
+}
+
+
 int main() {
     //system("color 7c");
     Library* biblioteca = createBiblioteca();
@@ -397,10 +472,10 @@ int main() {
             case 2: 
                 mostrarLibros( biblioteca );
                 break;
-            /*case 3: 
-                buscarTitulo( almacen );
+            case 3: 
+                searchWords( biblioteca );
                 break;
-            case 4: 
+            /*case 4: 
                 palabrasFrecuentes( almacen->tipo );
                 break;*/
             case 5: 
