@@ -31,6 +31,17 @@ typedef struct{
     TreeMap* Libros;
 }Library;
 
+char* AMinuscula( char* str){
+    size_t index = 0;
+    size_t largo = strlen( str );
+    while ( index < largo)
+    {
+        str[index] = tolower(str[index]);
+        index += 1;
+    }
+    return str;
+}
+
 int lower_than_string(void* key1, void* key2){
     char* k1=(char*) key1;
     char* k2=(char*) key2;
@@ -41,7 +52,7 @@ int lower_than_string(void* key1, void* key2){
 int lower_than_numeric(void* key1, void* key2){
     double* k1=(double*) key1;
     double* k2=(double*) key2;
-    if(*k1 > *k2) return 1;
+    if(*k1 >= *k2) return 1;
     return 0;
 }
 
@@ -210,7 +221,7 @@ void LeerArchivo(char* ubicacion, Libro* libro){
     Word* palabraAux;
     libro->wordSearch = createMap(250);
     //Aqui obtengo las palabras de cada archivo y las guardo
-    char* word=next_word(fp);
+    char* word = next_word(fp);
     Pair* aux;
     while(word){
         aux = searchMap(libro->wordSearch, word);
@@ -221,15 +232,13 @@ void LeerArchivo(char* ubicacion, Libro* libro){
         else{
             contarCaracteres(word, libro);
             removerCaracteresEspeciales(word);
-            palabraAux = createPalabra(word);
+            palabraAux = createPalabra(AMinuscula(word));
             insertMap(libro->wordSearch, palabraAux->palabra, palabraAux );
             libro->cantPalabra += 1;
         }
 
         word=next_word(fp);
     }
-    //mostrarPalabras(libro->wordSearch);
-    //printf("%i - %i", libro->cantPalabra, libro->cantCaracter );
     fclose(fp);
     char codigo[11];
     quitarFolder(codigo, ubicacion);
@@ -313,8 +322,7 @@ double calcularRelevancia(Library* biblioteca, Libro* libro, Word* palabra ){
     double relevancia;
     double docsConLaPalabra= 0;
     docsConLaPalabra = cantidadDocsConPalabra(biblioteca, palabra->palabra);
-    relevancia = (palabra->frecuencia / (double) libro->cantPalabra ) * log( (double)biblioteca->MapCodigo->size / docsConLaPalabra);
-    //printf() 
+    relevancia = (palabra->frecuencia / (double) libro->cantPalabra ) * log( (double)biblioteca->MapCodigo->size / docsConLaPalabra); 
     return relevancia;
 }
 
@@ -332,30 +340,35 @@ void obtenerTodasRelevancias(Library* biblioteca, Libro* libro ){
 
 void palabrasRelevantes(Library* biblioteca){
     system("cls");
-    printf("\nMOSTRAR PALABRAS MAS RELEVANTES\n");
-
-    char titulo[101];
-    printf("Ingrese un titulo de un Libro: ");
-    gets(titulo);
-    PairTree* aux = searchTreeMap(biblioteca->Libros, titulo);
-    if ( aux ){
-        Libro* libroActual = aux->value;
-        obtenerTodasRelevancias(biblioteca, libroActual);
-        int cont = 1;
-        aux = firstTreeMap(libroActual->wordRelevancy);
-        printf("\nLas 10 palabras más relevantes son:\n");
-        while( aux  && cont <= 10){
-            Word* palabraActual = aux->value;
-            printf("%i.- %s  - %f\n", cont ,palabraActual->palabra, palabraActual->relevancia);
-            aux = nextTreeMap(libroActual->wordRelevancy);
-            cont += 1;
+    if(biblioteca->MapCodigo->size >= 2){
+        printf("\nMOSTRAR PALABRAS MAS RELEVANTES\n");
+        char titulo[101];
+        printf("Ingrese un titulo de un Libro: ");
+        fflush(stdin);
+        gets(titulo);
+        PairTree* aux = searchTreeMap(biblioteca->Libros, titulo);
+        if ( aux ){
+            Libro* libroActual = aux->value;
+            obtenerTodasRelevancias(biblioteca, libroActual);
+            int cont = 1;
+            aux = firstTreeMap(libroActual->wordRelevancy);
+            printf("\nLas 10 palabras mas relevantes son:\n");
+            while( aux  && cont <= 10){
+                Word* palabraActual = aux->value;
+                printf("%i.- %s  - %f\n", cont ,palabraActual->palabra, palabraActual->relevancia);
+                aux = nextTreeMap(libroActual->wordRelevancy);
+                cont += 1;
+            }
         }
+        else{
+            printf("\nEl libro no se encuentra en la biblioteca\n");
+        }  
     }
     else{
-        printf("\nEl libro no se encuentra en la biblioteca");
+        printf("\nDeben ser mas de 1 libro para calcular la relevancia\n");
     }
+    
     system("pause");
-
 }
 
 List *split(char *string, char *delim) {
@@ -381,14 +394,15 @@ bool verificarLibro(List *words, HashMap *bookWords) {
     string1 = (char *)firstList(words);
     while (string1 != NULL) {
         flag = false;
-        string2 = (char *)((Word *)firstMap(bookWords)->value)->palabra;
-        while(string2 != NULL) {
+        Pair* aux = firstMap(bookWords);
+        while(aux != NULL) {
+            string2 = (char *)((Word *) aux->value)->palabra;
             //printf("%s = %s\n", string1, string2);
             if (is_equal(string1, string2)) {
                 flag = true;
                 break;
             } 
-            string2 = (char *)((Word *)nextMap(bookWords)->value)->palabra;
+            aux = nextMap(bookWords);
         }
         if (flag == false) return false;
         string1 = (char *)nextList(words);
@@ -432,6 +446,41 @@ void searchWords(Library *biblioteca) {
     system("pause");
 }
 
+void buscarXPalabra(Library* biblioteca){
+    system("cls");
+    printf("\nMOSTRAR LIBROS SEGUN LA RELEVANCIA DE LA PALABRA\n");
+    char palabra[21];
+    printf("Ingrese una palabra: ");
+    fflush(stdin);
+    scanf("%s",palabra);
+    TreeMap* libroXrelevancia = createTreeMap(lower_than_numeric);
+    Pair* aux = firstMap(biblioteca->MapCodigo);
+    while(aux){
+        Libro* libro = aux->value;
+        aux = searchMap( libro->wordSearch, palabra);
+        if( aux ){
+            double* relevancia = (double*) malloc(sizeof(double));
+            *relevancia = calcularRelevancia(biblioteca, libro, (Word*)aux->value);
+            insertTreeMap(libroXrelevancia, relevancia, libro);
+        }
+        aux = nextMap(biblioteca->MapCodigo);
+    }
+
+    PairTree* aux2 = firstTreeMap(libroXrelevancia);
+    if(aux2){
+       while(aux2){
+            Libro* libro = aux2->value;
+            printf("Codigo del libro: %s\n", libro->codigo);
+            printf("Titulo del libro: %s\n\n", libro->titulo);
+            aux2 = nextTreeMap(libroXrelevancia);
+        } 
+    }
+    else{
+        printf("No existen libros que contengan esa palabra");
+    }
+
+    system("pause");
+}
 
 int main() {
     //system("color 7c");
@@ -481,10 +530,10 @@ int main() {
             case 5: 
                 palabrasRelevantes( biblioteca );
                 break;
-            /*case 6: 
-                buscarXPalabra( almacen->nombre );
+            case 6: 
+                buscarXPalabra( biblioteca );
                 break;
-            case 7: 
+            /*case 7: 
                 mostrarEnContexto( almacen, 0);
                 break;*/
             case 8:
