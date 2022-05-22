@@ -5,14 +5,15 @@
 #include <string.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <math.h>
 #include "hashmap.c"
 #include "list.c"
 #include "treemap.c"
 
 typedef struct{
     char* palabra;
-    unsigned long frecuencia;
-    unsigned long relevancia;
+    double frecuencia;
+    double relevancia;
 }Word;
 
 typedef struct{
@@ -37,10 +38,10 @@ int lower_than_string(void* key1, void* key2){
     return 0;
 }
 
-int lower_than_int(void* key1, void* key2){
-    int* k1=(int*) key1;
-    int* k2=(int*) key2;
-    if(*k1 < *k2) return 1;
+int lower_than_numeric(void* key1, void* key2){
+    double* k1=(double*) key1;
+    double* k2=(double*) key2;
+    if(*k1 > *k2) return 1;
     return 0;
 }
 
@@ -56,8 +57,8 @@ Libro* createLibro(){
     Libro* libroActual = (Libro*) malloc(sizeof(Libro));
     libroActual->cantCaracter = 0;
     libroActual->cantPalabra = 0;
-    libroActual->wordFrecuency = createTreeMap(lower_than_int);
-    libroActual->wordRelevancy = createTreeMap(lower_than_int);
+    libroActual->wordFrecuency = createTreeMap(lower_than_numeric);
+    libroActual->wordRelevancy = createTreeMap(lower_than_numeric);
     return libroActual;
 }
 
@@ -167,7 +168,7 @@ void mostrarPalabras(HashMap* MapPalabras){
     Word* palabra;
     while(aux){
         palabra = aux->value;
-        printf("%s - %i\n", palabra->palabra, palabra->frecuencia);
+        printf("%s - %f\n", palabra->palabra, palabra->frecuencia);
         aux = nextMap(MapPalabras);
     }
 }
@@ -227,8 +228,8 @@ void LeerArchivo(char* ubicacion, Libro* libro){
 
         word=next_word(fp);
     }
-    mostrarPalabras(libro->wordSearch);
-    printf("%i - %i", libro->cantPalabra, libro->cantCaracter );
+    //mostrarPalabras(libro->wordSearch);
+    //printf("%i - %i", libro->cantPalabra, libro->cantCaracter );
     fclose(fp);
     char codigo[11];
     quitarFolder(codigo, ubicacion);
@@ -294,6 +295,69 @@ void mostrarLibros(Library* biblioteca){
     system("pause");
 }
 
+double cantidadDocsConPalabra(Library* biblioteca, char* palabra ){
+    double cont = 0;
+    PairTree* aux = firstTreeMap(biblioteca->Libros );
+    Libro* libroActual;
+    while( aux ){
+        libroActual = aux->value;
+        if(searchMap(libroActual->wordSearch, palabra)){
+            cont += 1;
+        }
+        aux = nextTreeMap( biblioteca->Libros );
+    }
+    return cont;
+}
+
+double calcularRelevancia(Library* biblioteca, Libro* libro, Word* palabra ){
+    double relevancia;
+    double docsConLaPalabra= 0;
+    docsConLaPalabra = cantidadDocsConPalabra(biblioteca, palabra->palabra);
+    relevancia = (palabra->frecuencia / (double) libro->cantPalabra ) * log( (double)biblioteca->MapCodigo->size / docsConLaPalabra);
+    //printf() 
+    return relevancia;
+}
+
+void obtenerTodasRelevancias(Library* biblioteca, Libro* libro ){
+    libro->wordRelevancy = createTreeMap(lower_than_numeric) ;
+    Pair* aux = firstMap(libro->wordSearch);
+    while(aux){
+        Word* palabraActual = aux->value;
+        palabraActual->relevancia = calcularRelevancia(biblioteca, libro, palabraActual);
+
+        insertTreeMap(libro->wordRelevancy, &palabraActual->relevancia, palabraActual);
+        aux = nextMap(libro->wordSearch);
+    }
+}
+
+void palabrasRelevantes(Library* biblioteca){
+    system("cls");
+    printf("\nMOSTRAR PALABRAS MAS RELEVANTES\n");
+
+    char titulo[101];
+    printf("Ingrese un titulo de un Libro: ");
+    gets(titulo);
+    PairTree* aux = searchTreeMap(biblioteca->Libros, titulo);
+    if ( aux ){
+        Libro* libroActual = aux->value;
+        obtenerTodasRelevancias(biblioteca, libroActual);
+        int cont = 1;
+        aux = firstTreeMap(libroActual->wordRelevancy);
+        printf("\nLas 10 palabras más relevantes son:\n");
+        while( aux  && cont <= 10){
+            Word* palabraActual = aux->value;
+            printf("%i.- %s  - %f\n", cont ,palabraActual->palabra, palabraActual->relevancia);
+            aux = nextTreeMap(libroActual->wordRelevancy);
+            cont += 1;
+        }
+    }
+    else{
+        printf("\nEl libro no se encuentra en la biblioteca");
+    }
+    system("pause");
+
+}
+
 int main() {
     //system("color 7c");
     Library* biblioteca = createBiblioteca();
@@ -338,11 +402,11 @@ int main() {
                 break;
             case 4: 
                 palabrasFrecuentes( almacen->tipo );
-                break;
+                break;*/
             case 5: 
-                palabrasRelevantes( almacen->marca );
+                palabrasRelevantes( biblioteca );
                 break;
-            case 6: 
+            /*case 6: 
                 buscarXPalabra( almacen->nombre );
                 break;
             case 7: 
