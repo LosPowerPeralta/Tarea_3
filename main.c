@@ -494,10 +494,10 @@ int main() {
         printf("\n========== MENU DE BIBLIOTECA ==========\n\n");
         printf("1.-  Cargar libros\n");
         printf("2.-  Mostrar libros ordenados\n");
-        printf("3.-  Buscar un libro por titulo\n");
-        printf("4.-  Palabras con mayor frecuencia\n");  
-        printf("5.-  Palabras mas relevantes\n"); 
-        printf("6.-  Buscar por palabra\n");  
+        printf("3.-  Buscar titulos por palabras\n");
+        printf("4.-  10 Palabras con mayor frecuencia\n");  
+        printf("5.-  10 Palabras mas relevantes\n"); 
+        printf("6.-  Buscar libros por relevancia de la palabra\n");  
         printf("7.-  Mostrar palabra en su contexto dentro del libro\n");
         printf("8.-  Salir\n");
 
@@ -525,7 +525,7 @@ int main() {
                 searchWords( biblioteca );
                 break;
             /*case 4: 
-                palabrasFrecuentes( almacen->tipo );
+                palabrasFrecuentes( biblioteca );
                 break;*/
             case 5: 
                 palabrasRelevantes( biblioteca );
@@ -534,7 +534,7 @@ int main() {
                 buscarXPalabra( biblioteca );
                 break;
             /*case 7: 
-                mostrarEnContexto( almacen, 0);
+                mostrarEnContexto( biblioteca );
                 break;*/
             case 8:
                 return EXIT_SUCCESS;
