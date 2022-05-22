@@ -20,8 +20,8 @@ typedef struct{
     char codigo[11];
     unsigned long cantCaracter;
     HashMap* wordSearch;
-    //TreeMap* wordFrecuency;
-    //TreeMap* wordRelevancy;
+    TreeMap* wordFrecuency;
+    TreeMap* wordRelevancy;
     unsigned long cantPalabra;
 }Libro;
 
@@ -30,12 +30,42 @@ typedef struct{
     unsigned long cantLibros;
 }Library;
 
+int lower_than_string(void* key1, void* key2){
+    char* k1=(char*) key1;
+    char* k2=(char*) key2;
+    if(strcmp(k1,k2)<0) return 1;
+    return 0;
+}
+
+int lower_than_int(void* key1, void* key2){
+    int* k1=(int*) key1;
+    int* k2=(int*) key2;
+    if(*k1 < *k2) return 1;
+    return 0;
+}
+
 Word* createPalabra(char* str){
     Word* NewWord = (Word*) malloc( sizeof(Word) );
     NewWord->palabra = (char*) malloc( strlen(str)+1);
     strcpy(NewWord->palabra,str);
     NewWord->frecuencia = 1;
     return NewWord;
+}
+
+Libro* createLibro(){
+    Libro* libroActual = (Libro*) malloc(sizeof(Libro));
+    libroActual->cantCaracter = 0;
+    libroActual->cantPalabra = 0;
+    libroActual->wordFrecuency = createTreeMap(lower_than_int);
+    libroActual->wordRelevancy = createTreeMap(lower_than_int);
+    return libroActual;
+}
+
+Library* createBiblioteca(){
+    Library* newLibrary = (Library*) malloc(sizeof(Library));
+    newLibrary->Libros = createTreeMap( lower_than_string );
+    newLibrary->cantLibros = 0;
+    return newLibrary;
 }
 
 void procesoArchivo(char archivo[16], char* titulo){
@@ -50,7 +80,6 @@ void procesoArchivo(char archivo[16], char* titulo){
 
     char linea[1024];
     while( fscanf(fp, " %1023s", linea)){
-        //printf("%s", linea); system("pause");
         if (strcmp(linea, "Title:") == 0){
             fgetc(fp);
             fgets(titulo,100,fp);
@@ -90,10 +119,8 @@ HashMap* listarArchivos(){
     while ((entrada = readdir (directorio)) != NULL){
         if ( (strcmp(entrada->d_name, ".")!=0) && (strcmp(entrada->d_name, "..")!=0) ){
             char titulo[101];
-            //char* titulo = (char*) malloc(101);
             char folder[11]; strcpy(folder,".\\Libros\\"); //Carpeta donde se ubican los libros
             char archivo[21];
-            //char* archivo = (char*) malloc(21);
             strcpy(archivo, strcat( folder, (char*)entrada->d_name )); //Ubicación de cada archivo
             procesoArchivo(archivo, titulo);
             char* data = (char*) malloc(21); 
@@ -101,7 +128,6 @@ HashMap* listarArchivos(){
             char* key = (char*) malloc(101);
             strcpy(key, titulo);
             insertMap(MapLibros, key ,data);
-            //insertMap(MapLibros, titulo, archivo);
         }
     }
     closedir (directorio);
@@ -231,14 +257,12 @@ void importar(HashMap* MapLibros, Library* biblioteca) {
                 printf("El libro ya fue agregado a la biblioteca\n");
             }
             else{
-                Libro* libroActual = (Libro*) malloc(sizeof(Libro));
-                libroActual->cantCaracter = 0;
-                libroActual->cantPalabra = 0;
+                Libro* libroActual = createLibro();
                 strcpy(libroActual->titulo, titulo);
                 LeerArchivo( (char*)searchMap(MapLibros, titulo)->value , libroActual );
                 printf("nombre: %s\n",libroActual->titulo);
                 printf("codigo: %s\n",libroActual->codigo);
-                insertTreeMap(biblioteca->Libros, libroActual->titulo, libroActual);   //INSERTAR EN EL TREEMAP DE LA BIBLIOTECA
+                insertTreeMap(biblioteca->Libros, libroActual->titulo, libroActual); //INSERTAR  LIBRO EN EL TREEMAP DE LA BIBLIOTECA
                 printf("Libro agregado a la biblioteca\n");
             }
     
@@ -253,6 +277,7 @@ void importar(HashMap* MapLibros, Library* biblioteca) {
 }
 
 void mostrarLibros(Library* biblioteca){
+    system("cls");
     printf("\nLIBROS DE LA BIBLIOTECA\n");
     PairTree* aux = firstTreeMap(biblioteca->Libros);
     while(aux){
@@ -268,23 +293,9 @@ void mostrarLibros(Library* biblioteca){
     system("pause");
 }
 
-int lower_than_string(void* key1, void* key2){
-    char* k1=(char*) key1;
-    char* k2=(char*) key2;
-    if(strcmp(k1,k2)<0) return 1;
-    return 0;
-}
-
-Library* createBiblioteca(){
-    Library* newLibrary = (Library*) malloc(sizeof(Library));
-    newLibrary->Libros = createTreeMap( lower_than_string );
-    newLibrary->cantLibros = 0;
-    return newLibrary;
-}
-
 int main() {
     //system("color 7c");
-    Library* biblioteca = createBiblioteca( );
+    Library* biblioteca = createBiblioteca();
     HashMap* MapArchivos = (HashMap*) listarArchivos(); 
     char opcion[2];
     int auxOpcion;
