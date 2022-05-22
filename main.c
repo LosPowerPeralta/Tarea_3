@@ -26,8 +26,8 @@ typedef struct{
 }Libro;
 
 typedef struct{
+    HashMap* MapCodigo;
     TreeMap* Libros;
-    unsigned long cantLibros;
 }Library;
 
 int lower_than_string(void* key1, void* key2){
@@ -64,7 +64,7 @@ Libro* createLibro(){
 Library* createBiblioteca(){
     Library* newLibrary = (Library*) malloc(sizeof(Library));
     newLibrary->Libros = createTreeMap( lower_than_string );
-    newLibrary->cantLibros = 0;
+    newLibrary->MapCodigo = createMap(150);
     return newLibrary;
 }
 
@@ -263,6 +263,7 @@ void importar(HashMap* MapLibros, Library* biblioteca) {
                 printf("nombre: %s\n",libroActual->titulo);
                 printf("codigo: %s\n",libroActual->codigo);
                 insertTreeMap(biblioteca->Libros, libroActual->titulo, libroActual); //INSERTAR  LIBRO EN EL TREEMAP DE LA BIBLIOTECA
+                insertMap(biblioteca->MapCodigo, libroActual->codigo, libroActual); //INSERTAR LIBRO EN EL HASHMAP DE LA BIBLIOTECA POR SU CODIGO
                 printf("Libro agregado a la biblioteca\n");
             }
     
