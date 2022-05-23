@@ -46,7 +46,8 @@ char* AMinuscula( char* str){
     }
     return str;
 }
-
+// Funcion de TreeMap //
+// Compara cadenas en orden alfabética
 int lower_than_string(void* key1, void* key2){
     char* k1=(char*) key1;
     char* k2=(char*) key2;
@@ -54,6 +55,8 @@ int lower_than_string(void* key1, void* key2){
     return 0;
 }
 
+// Funcion de TreeMap //
+// Compara numeros de mayor a menor
 int lower_than_numeric(void* key1, void* key2){
     double* k1=(double*) key1;
     double* k2=(double*) key2;
@@ -103,6 +106,8 @@ Library* createBiblioteca(){
     return newLibrary;
 }
 
+// Funcion procesoArchivo//
+// Obtiene el titulo de todos los archivos para listarlos
 void procesoArchivo(char archivo[16], char* titulo){
     FILE* fp = NULL;
     fp = fopen ( archivo , "r");//Abrir file
@@ -142,6 +147,9 @@ bool esNumero(char *caracter) {
     return true;
 }
 
+// Funcion listarArchivos //
+// Abre todos los archivos de la carpeta libros para guardar sus nombres y listarlos
+// Hace más fácil la función importar para el usuario
 HashMap* listarArchivos(){
 
     HashMap *MapLibros = createMap(300);
@@ -174,6 +182,9 @@ HashMap* listarArchivos(){
     return MapLibros;
 }
 
+// Funcion quitarfolder //
+// De una ubicación de archivo /Libros/xxx.txt corta el string para obtener el código
+// xxx queda de esta forma y se guarda en codigo
 void quitarFolder(char* codigo , char *ubicacion){
     int i = 0, j = 0;
     while(ubicacion[i] != '\0'){
@@ -186,6 +197,8 @@ void quitarFolder(char* codigo , char *ubicacion){
     codigo[j] = '\0';
 }
 
+// Funcion next_word //
+// Obtiene la siguiente palabra del archivo.txt y la retorna
 char* next_word (FILE *f) {
     char x[1024];
     if (fscanf(f, " %1023s", x) == 1)
@@ -239,6 +252,8 @@ void removerCaracteresEspeciales(char *str) {
   str[indiceCadenaLimpia] = 0;
 }
 
+// Funcion ubicar posicion de lectura //
+// Ubica el puntero para leer el archivo en donde exactamente comienza el texto
 void ubicarPosicionDeLectura(FILE* fp){
     char linea[1024];
     while(true){
