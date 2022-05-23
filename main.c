@@ -275,7 +275,7 @@ void ubicarPosicionDeLectura(FILE* fp){
   Esta funcion abre un archivo y lee dicho archivo en caso de error vuelve al menu.
   Es una funcion void por lo que no retorna nada.
 */
-void LeerArchivo(char* ubicacion, Libro* libro){
+void LeerArchivo(char* ubicacion, Libro* libro, HashMap* blackList){
     FILE* fp = NULL;
     long long *auxPos;
     List *pos;
@@ -297,6 +297,8 @@ void LeerArchivo(char* ubicacion, Libro* libro){
     while(word){
         auxPos = (long long *) malloc(sizeof(long long));
         *auxPos = ftell(fp);
+        contarCaracteres(word, libro);
+        removerCaracteresEspeciales(word);
         aux = searchMap(libro->wordSearch, word);
         if( aux ){
            palabraAux = aux->value;
@@ -304,13 +306,13 @@ void LeerArchivo(char* ubicacion, Libro* libro){
            palabraAux->frecuencia += 1; 
         }
         else{
-            pos = createList();
-            pushBack(pos, auxPos);
-            contarCaracteres(word, libro);
-            removerCaracteresEspeciales(word);
-            palabraAux = createPalabra(AMinuscula(word), pos);
-            insertMap(libro->wordSearch, palabraAux->palabra, palabraAux );
-            libro->cantPalabra += 1;
+            if( !searchMap(blackList, word)){
+                pos = createList();
+                pushBack(pos, auxPos);
+                palabraAux = createPalabra(AMinuscula(word), pos);
+                insertMap(libro->wordSearch, palabraAux->palabra, palabraAux );
+                libro->cantPalabra += 1; 
+            }
         }
 
         word=next_word(fp);
@@ -340,7 +342,7 @@ void mostrarTitulos(HashMap* MapLibros){
     cuando este libro no este previamente en la biblioteca.
     Es una funcion void por lo que no retrona nada.
 */
-void importar(HashMap* MapLibros, Library* biblioteca) {
+void importar(HashMap* MapLibros, Library* biblioteca, HashMap* blackList) {
     system("cls");
     printf("ESTE ES EL LISTADO DE LIBROS DISPONIBLES PARA AGREGAR A LA BIBLIOTECA\n");
     mostrarTitulos(MapLibros);
@@ -357,7 +359,7 @@ void importar(HashMap* MapLibros, Library* biblioteca) {
             else{
                 Libro* libroActual = createLibro();
                 strcpy(libroActual->titulo, titulo);
-                LeerArchivo( (char*)searchMap(MapLibros, titulo)->value , libroActual );
+                LeerArchivo( (char*)searchMap(MapLibros, titulo)->value , libroActual, blackList );
                 printf("Titulo del libro: %s\n",libroActual->titulo);
                 printf("Codigo del libro: %s\n",libroActual->codigo);
                 insertTreeMap(biblioteca->Libros, libroActual->titulo, libroActual); //INSERTAR  LIBRO EN EL TREEMAP DE LA BIBLIOTECA
@@ -649,6 +651,7 @@ void palabrasFrecuentes(Library* biblioteca){                   //Función que i
     PairTree* auxT = searchTreeMap(biblioteca->Libros, titulo);     //auxT = Arbol binario ocupado para ordenar frecuencias de mayor a menor
     if ( auxT ){                                                    //Si el libro ingresado existe
         Libro* libroActual = auxT->value;
+        libroActual->wordFrecuency = createTreeMap(lower_than_numeric);
         Pair* aux = firstMap(libroActual->wordSearch);
         while (aux){                                                //Mientras el mapa no termine
             Word* palabraActual = (Word*) aux->value;
@@ -769,8 +772,24 @@ void mostrarEnContexto(HashMap *MapArchivos, HashMap *MapCodigos) {
     system("pause");
 }
 
+HashMap* createBlackList(){
+    HashMap* blackList = createMap( 30 );
+    insertMap(blackList, "the","the");insertMap(blackList, "he", "he");insertMap(blackList, "she", "she");insertMap(blackList, "it", "it");
+    insertMap(blackList, "and", "and");insertMap(blackList, "i", "i");insertMap(blackList, "you", "you");insertMap(blackList, "we", "we");
+    insertMap(blackList, "there", "there");insertMap(blackList, "are", "are");insertMap(blackList, "am", "am");insertMap(blackList, "is", "is");
+    insertMap(blackList, "that", "that");insertMap(blackList, "at", "at");insertMap(blackList, "to", "to");insertMap(blackList, "so", "so");
+    insertMap(blackList, "but", "but");insertMap(blackList, "must", "must");insertMap(blackList, "should", "should");insertMap(blackList, " ", " ");
+    insertMap(blackList, "with", "with");insertMap(blackList, "on", "on");insertMap(blackList, "his", "his");insertMap(blackList, "her", "her");
+    insertMap(blackList, "a", "a");insertMap(blackList, "of", "of");insertMap(blackList, "was", "was");insertMap(blackList, "were", "were");
+    insertMap(blackList, "for", "for");insertMap(blackList, "by", "by");insertMap(blackList, "from", "from");insertMap(blackList, "not", "not");
+    insertMap(blackList, "in", "in");insertMap(blackList, "then", "then");insertMap(blackList, "him", "him");insertMap(blackList, "\n", "\n");
+    insertMap(blackList, "by", "by");insertMap(blackList, "as", "as");
+    return blackList;
+}
+
 int main() {
     //system("color 7c");
+    HashMap* blackList = createBlackList();
     Library* biblioteca = createBiblioteca();
     HashMap* MapArchivos = (HashMap*) listarArchivos(); 
     char opcion[2];
@@ -803,7 +822,7 @@ int main() {
         switch(auxOpcion)
         {
             case 1: 
-                importar( MapArchivos, biblioteca );
+                importar( MapArchivos, biblioteca, blackList  );
                 break;
             case 2: 
                 mostrarLibros( biblioteca );
