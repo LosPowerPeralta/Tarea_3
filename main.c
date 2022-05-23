@@ -698,9 +698,9 @@ int main() {
             case 3: 
                 searchWords( biblioteca );
                 break;
-            /*case 4: 
+            case 4: 
                 palabrasFrecuentes( biblioteca );
-                break;*/
+                break;
             case 5: 
                 palabrasRelevantes( biblioteca );
                 break;
