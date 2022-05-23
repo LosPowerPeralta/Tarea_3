@@ -647,6 +647,7 @@ void palabrasFrecuentes(Library* biblioteca){                   //Función que i
             calcularFrecuencia = (double *) malloc (sizeof(double));        
             *calcularFrecuencia = palabraActual->frecuencia / libroActual->cantPalabra;     //Se crea la variable que calcula la frecuencia 
             insertTreeMap(libroActual->wordFrecuency, calcularFrecuencia, palabraActual);   //de cada palabra en el libro
+            aux = nextMap(libroActual->wordSearch);
         }
         int cont = 1;
         auxT = firstTreeMap(libroActual->wordFrecuency);
