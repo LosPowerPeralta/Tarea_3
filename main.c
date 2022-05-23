@@ -740,7 +740,7 @@ void mostrarEnContexto(HashMap *MapArchivos, HashMap *MapCodigos) {
         aux = searchMap(MapCodigos, codigo);
         libroRevisado = (Libro *)aux->value;
         if (searchMap(libroRevisado->wordSearch, word) == NULL) {
-            printf("Palabra elegida no existe, desea intentarlo de nuevo? (s\n): ");
+            printf("Palabra elegida no existe, desea intentarlo de nuevo? (s/n): ");
             while (true) {
                 fflush(stdin);
                 gets(opcion);
