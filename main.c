@@ -47,6 +47,7 @@ char* AMinuscula( char* str){
     }
     return str;
 }
+
 // Funcion de TreeMap //
 // Compara cadenas en orden alfabética
 int lower_than_string(void* key1, void* key2){
@@ -132,6 +133,7 @@ void procesoArchivo(char archivo[16], char* titulo){
     titulo[strlen(titulo) - 1] = '\0'; //Elimina el salto de linea
     fclose(fp);//Cerrar file
 }
+
 // Funcion esNumero //
 /*
     Corrobora si el caracter es o no un numero.
@@ -267,6 +269,7 @@ void ubicarPosicionDeLectura(FILE* fp){
         }
     }
 }
+
 // Funcion LeerArchivo //
 /*
   Esta funcion abre un archivo y lee dicho archivo en caso de error vuelve al menu.
@@ -371,6 +374,7 @@ void importar(HashMap* MapLibros, Library* biblioteca) {
     system("pause");
 
 }
+
 // Funcion mostrarLibros //
 /*
     Se encarga de mostrar todos los libros de la biblioteca y sus datos respectivos
@@ -483,11 +487,15 @@ void palabrasRelevantes(Library* biblioteca){
     
     system("pause");
 }
-// Funcion split //
-/*
-    XDDD
-    Es una funcion List por lo que debe de retornar una lista.
-*/
+
+/************ | función split() | ****************/
+/* El proposito de esta función es guardar todas *
+ * las cadenas de caracteres que se encuentren   *
+ * separadas por el caracter recibido.           *
+ * Esta función recibe una cadena de caracteres  *
+ * y el caracter que separa cada parte de la     *
+ * cadena.                                       *
+ * Retorna una lista con las palabras separadas  */
 List *split(char *string, char *delim) {
     List *palabras = createList();
     char *token;
@@ -503,11 +511,12 @@ List *split(char *string, char *delim) {
     return palabras;
 }
 
-// Funcion verificarLibro //
-/*
-    Se encarga de verificar si dos palabras de un mismo libro son iguales.
-    Es una funcion bool por lo que debe de retornar true o false (1 o 0).
-*/
+/******************* | función verificarLibro() | ********************/
+/* El proposito de esta función es revisar si las palabbras          *
+ * ingresadas por el usuario se encuentran dentro del libro recibido.*
+ * Recibe una lista con las palabras y el libro a revisar.           *
+ * Retorna true si es que todas las palabras se encuentran dentro    *
+ * del libro y false en caso contrario.                              */
 bool verificarLibro(List *words, HashMap *bookWords) {
     char *string1;
     char *string2;
@@ -532,12 +541,12 @@ bool verificarLibro(List *words, HashMap *bookWords) {
     return true; 
 }
 
-// Funcion searhWords //
-/*
-    Se encarga de buscar un titulo por medio de las palabras ingresadas por el
-    usuario.
-    Es una funcion void por lo que no retorna nada.
-*/
+/*************** | funcion searchWords() | *****************/
+/* El proposito de esta función es buscar todos los libros *
+ * que contengan las palabras ingresadas por el usuario.   *
+ * Recibe una variable que contiene todos los libros       *
+ * almacenados.                                            *
+ * No retorna valores.                                     */
 void searchWords(Library *biblioteca) {
     List *words;
     char string[100];
@@ -629,7 +638,6 @@ void buscarXPalabra(Library* biblioteca){
     que desea buscar el usuario no esta dentro de la biblioteca.
     Imprime las 10 palabras mas frecuentes.
 */
-
 void palabrasFrecuentes(Library* biblioteca){                   //Función que imprime las palabras más frecuentes del libro que se indique
     double * calcularFrecuencia;
     Word* palabraActual;
@@ -647,7 +655,6 @@ void palabrasFrecuentes(Library* biblioteca){                   //Función que i
             calcularFrecuencia = (double *) malloc (sizeof(double));        
             *calcularFrecuencia = palabraActual->frecuencia / libroActual->cantPalabra;     //Se crea la variable que calcula la frecuencia 
             insertTreeMap(libroActual->wordFrecuency, calcularFrecuencia, palabraActual);   //de cada palabra en el libro
-            aux = nextMap(libroActual->wordSearch);
         }
         int cont = 1;
         auxT = firstTreeMap(libroActual->wordFrecuency);
@@ -666,6 +673,12 @@ void palabrasFrecuentes(Library* biblioteca){                   //Función que i
 
 }
 
+/************************* | funcion mostrarEnContexto() | *************************/
+/* El proposito de esta función es mostrar en que contexto esta colocada la        *
+ * palabra escojida por el usuario.                                                *
+ * Recibe un mapa que contiene todos los nombres de los libros y otro que contiene *
+ * todo el contenido dentro de los mismos.                                         *
+ * No retorna valores.                                                             */
 void mostrarEnContexto(HashMap *MapArchivos, HashMap *MapCodigos) {
     char titulo[50];
     Pair *aux;
@@ -690,26 +703,30 @@ void mostrarEnContexto(HashMap *MapArchivos, HashMap *MapCodigos) {
         quitarFolder(codigo, (char *)aux->value);  
         if ((aux = searchMap(MapCodigos, codigo)) == NULL) {
             printf("El libro no fue importado, desea intentarlo de nuevo? (s/n): ");
-            fflush(stdin);
-            gets(opcion);
-
-            if (opcion[0] == 's') {
-                fclose(libro);
-                mostrarEnContexto(MapArchivos, MapCodigos);
-            } 
-            else return;
+            while (true) {
+                fflush(stdin);
+                gets(opcion);
+                strcpy(opcion, AMinuscula(opcion));
+                if (opcion[0] == 's') {
+                    mostrarEnContexto(MapArchivos, MapCodigos);
+                }
+                if (opcion[0] == 'n') return;
+                printf("Opcion escojida incorrecta, intentelo de nuevo: ");
+            }
         }
     }
     else {
         printf("El libro no existe, desea intentarlo de nuevo? (s/n): ");
-        fflush(stdin);
-        gets(opcion);
-
-        if (opcion[0] == 's') {
-            fclose(libro);
-            mostrarEnContexto(MapArchivos, MapCodigos);
+        while (true) {
+            fflush(stdin);
+            gets(opcion);
+            strcpy(opcion, AMinuscula(opcion));
+            if (opcion[0] == 's') {
+                mostrarEnContexto(MapArchivos, MapCodigos);
+            }
+            if (opcion[0] == 'n') return;
+            printf("Opcion escojida incorrecta, intentelo de nuevo: ");
         }
-        else return;
     }
     printf("Que palabra desea buscar?: ");
     while (true) {
@@ -720,10 +737,15 @@ void mostrarEnContexto(HashMap *MapArchivos, HashMap *MapCodigos) {
         libroRevisado = (Libro *)aux->value;
         if (searchMap(libroRevisado->wordSearch, word) == NULL) {
             printf("Palabra elegida no existe, desea intentarlo de nuevo? (s\n): ");
-            fflush(stdin);
-            gets(opcion);
-
-            if (opcion[0] == 'n') return;
+            while (true) {
+                fflush(stdin);
+                gets(opcion);
+                
+                strcpy(opcion, AMinuscula(opcion));
+                if (opcion[0] == 'n') return;
+                if (opcion[0] == 's') break;
+                printf("Opcion escojida incorrecta, intentelo de nuevo: ");
+            }
         }
         else break;
     }
