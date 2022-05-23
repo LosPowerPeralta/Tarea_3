@@ -31,6 +31,11 @@ typedef struct{
     TreeMap* Libros;
 }Library;
 
+// Funcion AMinuscula // 
+/*
+    Se encarga de pasar una letra mayuscula a minuscula.
+    Es de tipo char por lo que debe retorna una letra.
+*/
 char* AMinuscula( char* str){
     size_t index = 0;
     size_t largo = strlen( str );
@@ -56,6 +61,12 @@ int lower_than_numeric(void* key1, void* key2){
     return 0;
 }
 
+// Funcion createPalabra //
+/*
+    Se encarga de crear una variable de tipo palabra y de inicializar
+    sus variables.
+    Es una funcion de tipo Word por lo que debe retornar una variable puntero de tipo Word.
+*/
 Word* createPalabra(char* str){
     Word* NewWord = (Word*) malloc( sizeof(Word) );
     NewWord->palabra = (char*) malloc( strlen(str)+1);
@@ -64,6 +75,12 @@ Word* createPalabra(char* str){
     return NewWord;
 }
 
+// Funcion createLibro //
+/*
+    Se encarga de crear una variable de tipo Libro y de inicializar
+    sus variables.
+    Es una funcion de tipo Libro por lo que debe retornar una variable puntero de tipo Libro.
+*/
 Libro* createLibro(){
     Libro* libroActual = (Libro*) malloc(sizeof(Libro));
     libroActual->cantCaracter = 0;
@@ -73,6 +90,12 @@ Libro* createLibro(){
     return libroActual;
 }
 
+// Funcion createBiblioteca //
+/*
+    Se encarga de crear una variable de tipo Library y de inicializar
+    sus variables.
+    Es una funcion de tipo Library por lo que debe retornar una variable puntero de tipo Library.
+*/
 Library* createBiblioteca(){
     Library* newLibrary = (Library*) malloc(sizeof(Library));
     newLibrary->Libros = createTreeMap( lower_than_string );
@@ -102,7 +125,11 @@ void procesoArchivo(char archivo[16], char* titulo){
     titulo[strlen(titulo) - 1] = '\0'; //Elimina el salto de linea
     fclose(fp);//Cerrar file
 }
-
+// Funcion esNumero //
+/*
+    Corrobora si el caracter es o no un numero.
+    Es una funcion de tipo bool por lo que debe retornar un true o false (1 o 0).
+*/
 bool esNumero(char *caracter) {
     int cont;
     if( !strcmp(caracter, "0") ) return false;
