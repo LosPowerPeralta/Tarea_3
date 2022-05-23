@@ -773,6 +773,10 @@ void mostrarEnContexto(HashMap *MapArchivos, HashMap *MapCodigos) {
     system("pause");
 }
 
+// Funcion blackList //
+/* 
+    Crea una lista negra para que no se importen palabras no significativas
+*/
 HashMap* createBlackList(){
     HashMap* blackList = createMap( 30 );
     insertMap(blackList, "the","the");insertMap(blackList, "he", "he");insertMap(blackList, "she", "she");insertMap(blackList, "it", "it");
@@ -784,7 +788,7 @@ HashMap* createBlackList(){
     insertMap(blackList, "a", "a");insertMap(blackList, "of", "of");insertMap(blackList, "was", "was");insertMap(blackList, "were", "were");
     insertMap(blackList, "for", "for");insertMap(blackList, "by", "by");insertMap(blackList, "from", "from");insertMap(blackList, "not", "not");
     insertMap(blackList, "in", "in");insertMap(blackList, "then", "then");insertMap(blackList, "him", "him");insertMap(blackList, "\n", "\n");
-    insertMap(blackList, "by", "by");insertMap(blackList, "as", "as");
+    insertMap(blackList, "by", "by");insertMap(blackList, "as", "as"); insertMap(blackList, "", "");
     return blackList;
 }
 
