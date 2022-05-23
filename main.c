@@ -612,6 +612,50 @@ void buscarXPalabra(Library* biblioteca){
     system("pause");
 }
 
+// Funcion palabrasFrecuentes //
+/* 
+    Se encarga de mostrar las palabras mas frecuentes de un libro indicado por el 
+    usuario, muestra mensajes en caso de haber libros o en caso de que el libro 
+    que desea buscar el usuario no esta dentro de la biblioteca.
+    Imprime las 10 palabras mas frecuentes.
+*/
+
+void palabrasFrecuentes(Library* biblioteca){                   //Función que imprime las palabras más frecuentes del libro que se indique
+    double * calcularFrecuencia;
+    Word* palabraActual;
+    system("cls");
+    printf("\nMOSTRAR PALABRAS MAS FRECUENTES\n");
+    char titulo[101];
+    printf("Ingrese un titulo de un Libro: ");
+    gets(titulo);
+    PairTree* auxT = searchTreeMap(biblioteca->Libros, titulo);     //auxT = Arbol binario ocupado para ordenar frecuencias de mayor a menor
+    if ( auxT ){                                                    //Si el libro ingresado existe
+        Libro* libroActual = auxT->value;
+        Pair* aux = firstMap(libroActual->wordSearch);
+        while (aux){                                                //Mientras el mapa no termine
+            Word* palabraActual = (Word*) aux->value;
+            calcularFrecuencia = (double *) malloc (sizeof(double));        
+            *calcularFrecuencia = palabraActual->frecuencia / libroActual->cantPalabra;     //Se crea la variable que calcula la frecuencia 
+            insertTreeMap(libroActual->wordFrecuency, calcularFrecuencia, palabraActual);   //de cada palabra en el libro
+        }
+        int cont = 1;
+        auxT = firstTreeMap(libroActual->wordFrecuency);
+        printf("\nLas 10 palabras mas frecuentes son:\n");
+        while( auxT  && cont <= 10){                                 //Se imprimiran las 10 primeras palabras ordenadas 
+            palabraActual = (Word*) auxT->value;
+            printf("%i.- %s  \n", cont ,palabraActual->palabra);
+            auxT = nextTreeMap(libroActual->wordFrecuency);
+            cont += 1;
+        }
+    }
+    else{
+        printf("\nEl libro no se encuentra en la biblioteca\n");       //En caso de ingresar un libro inválido imprime el msg
+    }
+    system("pause");
+
+}
+
+
 int main() {
     //system("color 7c");
     Library* biblioteca = createBiblioteca();
