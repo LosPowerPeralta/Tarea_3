@@ -798,7 +798,7 @@ int main() {
                 buscarXPalabra( biblioteca );
                 break;
             case 7: 
-                mostrarEnContexto( biblioteca );
+                mostrarEnContexto( biblioteca, biblioteca->MapCodigo );
                 break;
             case 8:
                 return EXIT_SUCCESS;
