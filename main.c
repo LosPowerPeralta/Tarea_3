@@ -85,7 +85,7 @@ void procesoArchivo(char archivo[16], char* titulo){
     fp = fopen ( archivo , "r");//Abrir file
 
     if(!fp){ //Validar que los archivos se abren correctamente en modo lectura
-        printf("Error al abrir el archivo");
+        printf("Error al abrir el archivo\n");
         system("pause");
         exit (1); 
     }
@@ -124,7 +124,8 @@ HashMap* listarArchivos(){
 
     directorio = opendir (".\\Libros");
     if (directorio == NULL){
-        printf("Error al abrir el directorio");
+        printf("**HUBO UN ERROR AL ABRIR EL DIRECTORIO**\n");
+        printf("**VOLVIENDO AL MENU**\n");
         system("pause");
         exit (1);
     }
@@ -166,6 +167,11 @@ char* next_word (FILE *f) {
         return NULL;
 }
 
+// Funcion contarCaracteres // 
+/*
+    Se encarga de contar los caracteres de una palabra.
+    Es una funcion void por lo que no retorna nada.
+*/
 void contarCaracteres( char* palabraAux, Libro* libro){
     int cont;
     for(cont = 0 ; palabraAux[cont]!= '\0'; cont += 1 ){
@@ -174,6 +180,11 @@ void contarCaracteres( char* palabraAux, Libro* libro){
     libro->cantCaracter += 1;
 }
 
+// Funcion mostrarPalabras // 
+/*
+    Se encarga de mostrar todas las palabras.
+    Es una funcion void por lo que no retorna nada.
+*/
 void mostrarPalabras(HashMap* MapPalabras){
     Pair* aux = firstMap(MapPalabras);
     Word* palabra;
@@ -184,6 +195,11 @@ void mostrarPalabras(HashMap* MapPalabras){
     }
 }
 
+// Funcion removerCaracteresEspeciales // 
+/*
+    Se encarga de remover caracteres especiales por medio de la tabla ASCII.
+    Es una funcion void por lo que no retorna nada.
+*/
 void removerCaracteresEspeciales(char *str) {
   int indiceCadena = 0, indiceCadenaLimpia = 0;
   while (str[indiceCadena]) {
@@ -206,13 +222,18 @@ void ubicarPosicionDeLectura(FILE* fp){
         }
     }
 }
-
+// Funcion LeerArchivo //
+/*
+  Esta funcion abre un archivo y lee dicho archivo en caso de error vuelve al menu.
+  Es una funcion void por lo que no retorna nada.
+*/
 void LeerArchivo(char* ubicacion, Libro* libro){
     FILE* fp = NULL;
     fp = fopen ( ubicacion , "r");//Abrir file
 
     if(!fp){ //Validar que los archivos se abren correctamente en modo lectura
-        printf("Error al abrir el archivo");
+        printf("**HUBO UN ERROR AL ABRIR EL ARCHIVO**\n");
+        printf("**VOLVIENDO AL MENU**\n");
         system("pause");
         exit (1); 
     }
@@ -245,6 +266,11 @@ void LeerArchivo(char* ubicacion, Libro* libro){
     strcpy(libro->codigo, codigo );
 }
 
+// Funcion mostrarTitulos //
+/*
+   Muestra todos los titulos.
+   Es una funcion void por lo que no retorna nada
+*/
 void mostrarTitulos(HashMap* MapLibros){
     Pair* aux = firstMap(MapLibros);
     while(aux){
@@ -253,43 +279,55 @@ void mostrarTitulos(HashMap* MapLibros){
     }
 }
 
+// Funcion importar //
+/*
+    Se encarga de agregar libros a la biblioteca hasta que el usuario lo desee, siempre y 
+    cuando este libro no este previamente en la biblioteca.
+    Es una funcion void por lo que no retrona nada.
+*/
 void importar(HashMap* MapLibros, Library* biblioteca) {
     system("cls");
+    printf("ESTE ES EL LISTADO DE LIBROS DISPONIBLES PARA AGREGAR A LA BIBLIOTECA\n");
     mostrarTitulos(MapLibros);
 
     char titulo[101];
-    printf("\nIngrese un titulo a la vez (Ingrese 0 para salir): \n");
+    printf("\nINGRESE UN TITULO A LA VEZ (SI DESEA SALIR SOLO INGRESE '0'): \n");
     do{
         fflush(stdin);
         gets(titulo);
         if(searchMap(MapLibros, titulo)){
             if( searchTreeMap(biblioteca->Libros, titulo) ){
-                printf("El libro ya fue agregado a la biblioteca\n");
+                printf("**ESTE LIBRO YA FUE AGREGADO A LA BIBLIOTECA**\n");
             }
             else{
                 Libro* libroActual = createLibro();
                 strcpy(libroActual->titulo, titulo);
                 LeerArchivo( (char*)searchMap(MapLibros, titulo)->value , libroActual );
-                printf("nombre: %s\n",libroActual->titulo);
-                printf("codigo: %s\n",libroActual->codigo);
+                printf("Titulo del libro: %s\n",libroActual->titulo);
+                printf("Codigo del libro: %s\n",libroActual->codigo);
                 insertTreeMap(biblioteca->Libros, libroActual->titulo, libroActual); //INSERTAR  LIBRO EN EL TREEMAP DE LA BIBLIOTECA
                 insertMap(biblioteca->MapCodigo, libroActual->codigo, libroActual); //INSERTAR LIBRO EN EL HASHMAP DE LA BIBLIOTECA POR SU CODIGO
-                printf("Libro agregado a la biblioteca\n");
+                printf("**EL LIBRO FUE AGREGADO CON EXITO**\n");
             }
     
         } 
         else{
             if( strcmp(titulo, "0") != 0)
-            printf("Este titulo no se encuentra en el listado\n");
+            printf("**SU LIBRO NO FUE ENCONTRADO DENTRO DE NUESTRA BASE DATOS**\n");
         }
     }while(strcmp("0", titulo) != 0);
     system("pause");
 
 }
-
+// Funcion mostrarLibros //
+/*
+    Se encarga de mostrar todos los libros de la biblioteca y sus datos respectivos
+    (codigo,nombre,cantidad de palabras y cantidad de caracteres).
+    Es una funcion void por lo que no retrona nada.
+*/
 void mostrarLibros(Library* biblioteca){
     system("cls");
-    printf("\nLIBROS DE LA BIBLIOTECA\n");
+    printf("\n================ LIBROS DE LA BIBLIOTECA ================\n");
     PairTree* aux = firstTreeMap(biblioteca->Libros);
     while(aux){
         Libro* libroActual = aux->value;
@@ -304,6 +342,12 @@ void mostrarLibros(Library* biblioteca){
     system("pause");
 }
 
+// Funcion cantidadDocsConPalabra //
+/*
+    Se encarga de contar la cantidad de documentos que 
+    tienen una palabra específica dada por el usuario.
+    Es una funcion double por lo que retorna un numero.
+*/
 double cantidadDocsConPalabra(Library* biblioteca, char* palabra ){
     double cont = 0;
     PairTree* aux = firstTreeMap(biblioteca->Libros );
@@ -318,6 +362,11 @@ double cantidadDocsConPalabra(Library* biblioteca, char* palabra ){
     return cont;
 }
 
+// Funcion calcularRelevancia //
+/*
+    Se encargar de calcular la relevancia de una palabra dentro de un libro.
+    Es una funcion double por lo que retorna un numero.
+*/
 double calcularRelevancia(Library* biblioteca, Libro* libro, Word* palabra ){
     double relevancia;
     double docsConLaPalabra= 0;
@@ -326,6 +375,11 @@ double calcularRelevancia(Library* biblioteca, Libro* libro, Word* palabra ){
     return relevancia;
 }
 
+// Funcion obtenerTodasRelevancias //
+/*
+    Se encarga de obtener las relevancias de todas las palabras de un libro.
+    Es una funcion void por lo que no retorna nada.
+*/
 void obtenerTodasRelevancias(Library* biblioteca, Libro* libro ){
     libro->wordRelevancy = createTreeMap(lower_than_numeric) ;
     Pair* aux = firstMap(libro->wordSearch);
@@ -338,10 +392,17 @@ void obtenerTodasRelevancias(Library* biblioteca, Libro* libro ){
     }
 }
 
+// Funcion palabrasRelevantes //
+/*
+    Se encarga de mostrar las palabras mas relevantes de un libro indicado por el 
+    usuario, muestra mensajes en caso de haber solo un libro o en caso de el libro 
+    que esea buscar el usuario no esta dentro de la biblioteca.
+    Es una funcion void por lo que no retorna nada.
+*/
 void palabrasRelevantes(Library* biblioteca){
     system("cls");
     if(biblioteca->MapCodigo->size >= 2){
-        printf("\nMOSTRAR PALABRAS MAS RELEVANTES\n");
+        printf("\n================ MOSTRAR PALABRAS MAS RELEVANTES ================\n");
         char titulo[101];
         printf("Ingrese un titulo de un Libro: ");
         fflush(stdin);
@@ -355,22 +416,26 @@ void palabrasRelevantes(Library* biblioteca){
             printf("\nLas 10 palabras mas relevantes son:\n");
             while( aux  && cont <= 10){
                 Word* palabraActual = aux->value;
-                printf("%i.- %s  - %f\n", cont ,palabraActual->palabra, palabraActual->relevancia);
+                printf("%i.- %s\n", cont ,palabraActual->palabra);
                 aux = nextTreeMap(libroActual->wordRelevancy);
                 cont += 1;
             }
         }
         else{
-            printf("\nEl libro no se encuentra en la biblioteca\n");
+            printf("\n**EL LIBRO NO FUE ENCONTRADO EN LA BIBLIOTECA**\n");
         }  
     }
     else{
-        printf("\nDeben ser mas de 1 libro para calcular la relevancia\n");
+        printf("\n**PARA CALCULAR LA RELEVANCIA DEBE SER OBLIGATORIAMENTE MAS DE UN LIBRO**\n");
     }
     
     system("pause");
 }
-
+// Funcion split //
+/*
+    XDDD
+    Es una funcion List por lo que debe de retornar una lista.
+*/
 List *split(char *string, char *delim) {
     List *palabras = createList();
     char *token;
@@ -386,6 +451,11 @@ List *split(char *string, char *delim) {
     return palabras;
 }
 
+// Funcion verificarLibro //
+/*
+    Se encarga de verificar si dos palabras de un mismo libro son iguales.
+    Es una funcion bool por lo que debe de retornar true o false (1 o 0).
+*/
 bool verificarLibro(List *words, HashMap *bookWords) {
     char *string1;
     char *string2;
@@ -397,7 +467,6 @@ bool verificarLibro(List *words, HashMap *bookWords) {
         Pair* aux = firstMap(bookWords);
         while(aux != NULL) {
             string2 = (char *)((Word *) aux->value)->palabra;
-            //printf("%s = %s\n", string1, string2);
             if (is_equal(string1, string2)) {
                 flag = true;
                 break;
@@ -411,6 +480,12 @@ bool verificarLibro(List *words, HashMap *bookWords) {
     return true; 
 }
 
+// Funcion searhWords //
+/*
+    Se encarga de buscar un titulo por medio de las palabras ingresadas por el
+    usuario.
+    Es una funcion void por lo que no retorna nada.
+*/
 void searchWords(Library *biblioteca) {
     List *words;
     char string[100];
@@ -421,64 +496,77 @@ void searchWords(Library *biblioteca) {
     size_t cont = 1;
 
     system("cls");
-    printf("=================== BUSCAR TITULO POR PALABRAS ================\n\n");
-    printf("Ingrese las palabras que desee buscar: ");
-    fflush(stdin);
-    gets(string);
-    printf("\n");
-    words = split(string, " ");
-
-    book = (Libro *)firstTreeMap(biblioteca->Libros)->value;
-    bookWords = book->wordSearch;
-    printf("************ TITULO(S) ***********\n");
-    while (true) {
-        if (verificarLibro(words, bookWords)) {
-            printf("%zd.- %s \n", cont, book->titulo);
-            cont++;
-        }
-
-        aux = nextTreeMap(biblioteca->Libros);
-        if (aux == NULL) break;
-        book = (Libro *)aux->value;
+    if(firstTreeMap(biblioteca->Libros)){
+        printf("=================== BUSCAR TITULO POR PALABRAS ================\n\n");
+        printf("Ingrese las palabras que desee buscar: ");
+        fflush(stdin);
+        gets(string);
+        printf("\n");
+        words = split(string, " ");
+        book = (Libro *)firstTreeMap(biblioteca->Libros)->value;
         bookWords = book->wordSearch;
+        printf("************ TITULO(S) ***********\n");
+        while (true) {
+            if (verificarLibro(words, bookWords)) {
+                printf("%zd.- %s \n", cont, book->titulo);
+                cont++;
+            }
+
+            aux = nextTreeMap(biblioteca->Libros);
+            if (aux == NULL) break;
+            book = (Libro *)aux->value;
+            bookWords = book->wordSearch;
+        }
+    }
+    else{
+        printf("\n**NO HAY LIBROS EN NUESTRA BASE DE DATOS**\n");
     }
 
     system("pause");
 }
 
+// Funcion buscarXPalabra //
+/*
+    Se encarga de mostrar todos los libros segun la relevancia de una palabra.
+    Es una funcion void por lo que no retorna nada.
+*/
 void buscarXPalabra(Library* biblioteca){
     system("cls");
-    printf("\nMOSTRAR LIBROS SEGUN LA RELEVANCIA DE LA PALABRA\n");
-    char palabra[21];
-    printf("Ingrese una palabra: ");
-    fflush(stdin);
-    scanf("%s",palabra);
-    TreeMap* libroXrelevancia = createTreeMap(lower_than_numeric);
-    Pair* aux = firstMap(biblioteca->MapCodigo);
-    while(aux){
-        Libro* libro = aux->value;
-        aux = searchMap( libro->wordSearch, palabra);
-        if( aux ){
-            double* relevancia = (double*) malloc(sizeof(double));
-            *relevancia = calcularRelevancia(biblioteca, libro, (Word*)aux->value);
-            insertTreeMap(libroXrelevancia, relevancia, libro);
+    if(firstMap(biblioteca->MapCodigo)){
+        printf("\n================ MOSTRAR LIBROS SEGUN LA RELEVANCIA DE LA PALABRA ================\n");
+        char palabra[21];
+        printf("Ingrese una palabra: ");
+        fflush(stdin);
+        scanf("%s",palabra);
+        TreeMap* libroXrelevancia = createTreeMap(lower_than_numeric);
+        Pair* aux = firstMap(biblioteca->MapCodigo);//Recorre cada libro
+        while(aux){
+            Libro* libro = aux->value;
+            aux = searchMap( libro->wordSearch, palabra);//Busca la palabra
+            if( aux ){
+                double* relevancia = (double*) malloc(sizeof(double));
+                *relevancia = calcularRelevancia(biblioteca, libro, (Word*)aux->value);//Calcular la relevancia de la palabra
+                insertTreeMap(libroXrelevancia, relevancia, libro);//Insertando ese libro segun la relevancia obtenida
+            }
+            aux = nextMap(biblioteca->MapCodigo);
         }
-        aux = nextMap(biblioteca->MapCodigo);
-    }
 
-    PairTree* aux2 = firstTreeMap(libroXrelevancia);
-    if(aux2){
-       while(aux2){
-            Libro* libro = aux2->value;
-            printf("Codigo del libro: %s\n", libro->codigo);
-            printf("Titulo del libro: %s\n\n", libro->titulo);
-            aux2 = nextTreeMap(libroXrelevancia);
+        PairTree* aux2 = firstTreeMap(libroXrelevancia); //Recorriendo todos los libro en orden de mayor relevancia de la palabra
+        if(aux2){
+        while(aux2){
+                Libro* libro = aux2->value;
+                printf("Codigo del libro: %s\n", libro->codigo);
+                printf("Titulo del libro: %s\n\n", libro->titulo);
+                aux2 = nextTreeMap(libroXrelevancia);
+            } 
+        }
+        else{
+            printf("\n**NO EXISTE ALGUN LIBRO EN NUESTRA BASE DE DATOS QUE CONTENGA ESA PALABRA**\n");
         } 
     }
     else{
-        printf("No existen libros que contengan esa palabra");
+        printf("\n**NO HAY LIBROS EN NUESTRA BASE DE DATOS**\n");
     }
-
     system("pause");
 }
 
@@ -507,7 +595,7 @@ int main() {
             fflush(stdin);
             gets(opcion);
             if (esNumero(opcion)) break;
-            else printf("Opcion ingresada incorrecta, intentelo de nuevo: ");
+            else printf("**OPCION INCORRECTA POR FAVOR INGRESELO NUEVAMENTE**");
         }
 
         auxOpcion = atoi(opcion);
@@ -543,3 +631,4 @@ int main() {
 
     return EXIT_SUCCESS;
 }
+
