@@ -14,6 +14,7 @@ typedef struct{
     char* palabra;
     double frecuencia;
     double relevancia;
+    List *pos;
 }Word;
 
 typedef struct{
@@ -70,11 +71,12 @@ int lower_than_numeric(void* key1, void* key2){
     sus variables.
     Es una funcion de tipo Word por lo que debe retornar una variable puntero de tipo Word.
 */
-Word* createPalabra(char* str){
+Word* createPalabra(char* str, List *pos){
     Word* NewWord = (Word*) malloc( sizeof(Word) );
     NewWord->palabra = (char*) malloc( strlen(str)+1);
     strcpy(NewWord->palabra,str);
     NewWord->frecuencia = 1;
+    NewWord->pos = pos;
     return NewWord;
 }
 
@@ -201,8 +203,9 @@ void quitarFolder(char* codigo , char *ubicacion){
 // Obtiene la siguiente palabra del archivo.txt y la retorna
 char* next_word (FILE *f) {
     char x[1024];
-    if (fscanf(f, " %1023s", x) == 1)
+    if (fscanf(f, " %1023s", x) == 1) {
         return strdup(x);
+    }
     else
         return NULL;
 }
@@ -271,6 +274,8 @@ void ubicarPosicionDeLectura(FILE* fp){
 */
 void LeerArchivo(char* ubicacion, Libro* libro){
     FILE* fp = NULL;
+    long long *auxPos;
+    List *pos;
     fp = fopen ( ubicacion , "r");//Abrir file
 
     if(!fp){ //Validar que los archivos se abren correctamente en modo lectura
@@ -287,15 +292,20 @@ void LeerArchivo(char* ubicacion, Libro* libro){
     char* word = next_word(fp);
     Pair* aux;
     while(word){
+        auxPos = (long long *) malloc(sizeof(long long));
+        *auxPos = ftell(fp);
         aux = searchMap(libro->wordSearch, word);
         if( aux ){
            palabraAux = aux->value;
+           pushBack(palabraAux->pos, auxPos);
            palabraAux->frecuencia += 1; 
         }
         else{
+            pos = createList();
+            pushBack(pos, auxPos);
             contarCaracteres(word, libro);
             removerCaracteresEspeciales(word);
-            palabraAux = createPalabra(AMinuscula(word));
+            palabraAux = createPalabra(AMinuscula(word), pos));
             insertMap(libro->wordSearch, palabraAux->palabra, palabraAux );
             libro->cantPalabra += 1;
         }
@@ -655,6 +665,86 @@ void palabrasFrecuentes(Library* biblioteca){                   //Función que i
 
 }
 
+void mostrarEnContexto(HashMap *MapArchivos, HashMap *MapCodigos) {
+    char titulo[50];
+    Pair *aux;
+    char codigo[10];
+    char opcion[1];
+    char word[50];
+    char linea[1024];
+    Libro *libroRevisado;
+    Word *palabraEncontrada;
+    FILE *libro;
+    long long *pos;
+    int cont = 1;
+
+    system("cls");
+    printf("================= MOSTRAR CONTEXTO ======================\n\n");
+    printf("Que libro desea ver?: ");
+    fflush(stdin);
+    gets(titulo);
+
+    if ((aux = searchMap(MapArchivos, titulo)) != NULL) {
+        libro = fopen(aux->value, "r");
+        quitarFolder(codigo, (char *)aux->value);  
+        if ((aux = searchMap(MapCodigos, codigo)) == NULL) {
+            printf("El libro no fue importado, desea intentarlo de nuevo? (s/n): ");
+            fflush(stdin);
+            gets(opcion);
+
+            if (opcion[0] == 's') {
+                fclose(libro);
+                mostrarEnContexto(MapArchivos, MapCodigos);
+            } 
+            else return;
+        }
+    }
+    else {
+        printf("El libro no existe, desea intentarlo de nuevo? (s/n): ");
+        fflush(stdin);
+        gets(opcion);
+
+        if (opcion[0] == 's') {
+            fclose(libro);
+            mostrarEnContexto(MapArchivos, MapCodigos);
+        }
+        else return;
+    }
+    printf("Que palabra desea buscar?: ");
+    while (true) {
+        fflush(stdin);
+        gets(word);
+
+        aux = searchMap(MapCodigos, codigo);
+        libroRevisado = (Libro *)aux->value;
+        if (searchMap(libroRevisado->wordSearch, word) == NULL) {
+            printf("Palabra elegida no existe, desea intentarlo de nuevo? (s\n): ");
+            fflush(stdin);
+            gets(opcion);
+
+            if (opcion[0] == 'n') return;
+        }
+        else break;
+    }
+    printf("\n");
+    palabraEncontrada = (Word *)searchMap(libroRevisado->wordSearch, word)->value;
+    pos = (long long *)firstList(palabraEncontrada->pos);
+    while(pos != NULL) {
+        fseek(libro, (*pos) - 40, SEEK_SET);
+        fscanf(libro, "%1023s", linea);
+        printf("%d.- ", cont);
+        while(ftell(libro) < (*pos) + 40) {
+            fscanf(libro, "%1023s", linea);
+            printf("%s ", linea);
+        }
+        printf("\n");
+        cont++;
+        pos = (long long *)nextList(palabraEncontrada->pos);
+    }
+    printf("\n");
+    printf("===================== VOLVIENDO AL MENU ======================\n");
+    system("pause");
+}
 
 int main() {
     //system("color 7c");
@@ -707,9 +797,9 @@ int main() {
             case 6: 
                 buscarXPalabra( biblioteca );
                 break;
-            /*case 7: 
+            case 7: 
                 mostrarEnContexto( biblioteca );
-                break;*/
+                break;
             case 8:
                 return EXIT_SUCCESS;
         }
