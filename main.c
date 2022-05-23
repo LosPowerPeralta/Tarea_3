@@ -305,7 +305,7 @@ void LeerArchivo(char* ubicacion, Libro* libro){
             pushBack(pos, auxPos);
             contarCaracteres(word, libro);
             removerCaracteresEspeciales(word);
-            palabraAux = createPalabra(AMinuscula(word), pos));
+            palabraAux = createPalabra(AMinuscula(word), pos);
             insertMap(libro->wordSearch, palabraAux->palabra, palabraAux );
             libro->cantPalabra += 1;
         }
